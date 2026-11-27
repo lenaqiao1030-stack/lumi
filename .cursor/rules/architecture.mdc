@@ -1,0 +1,13 @@
+---
+description: 编写 src 下代码时遵守的架构约束
+globs: src/**/*.ts
+alwaysApply: false
+---
+
+- 先读 AGENTS.md 第 6 节「架构硬约束」,逐条对照
+- 所有工具必须声明 side_effect;读网页的路径上不得出现写入类工具
+- 工具返回内容必须带 trust 标记,默认 untrusted
+- 边界用 zod 解析;不使用 any
+- 终止条件(轮数、预算、超时)在引擎里实现,不交给模型
+- 子任务失败返回 status + 部分结果,不抛出到顶层
+- 模型名从配置读取,不硬编码

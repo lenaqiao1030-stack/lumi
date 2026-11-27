@@ -1,0 +1,32 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(**)",
+      "Write(src/**)",
+      "Write(tests/**)",
+      "Write(specs/**)",
+      "Write(docs/**)",
+      "Write(evals/**)",
+      "Write(package.json)",
+      "Write(tsconfig*.json)",
+      "Write(vitest.config.*)",
+      "Write(eslint.config.*)",
+      "Shell(pnpm)",
+      "Shell(ls)",
+      "Shell(grep)",
+      "Shell(find)"
+    ],
+    "deny": [
+      "Read(.env*)",
+      "Write(.env*)",
+      "Write(.github/**)",
+      "Write(.cursor/**)",
+      "Write(AGENTS.md)",
+      "Write(src/governance/**)",
+      "Shell(git)",
+      "Shell(gh)",
+      "Shell(curl)",
+      "Shell(wget)"
+    ]
+  }
+}

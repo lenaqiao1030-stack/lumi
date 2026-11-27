@@ -1,0 +1,48 @@
+name: Kimi Review
+
+# 刻意使用 pull_request_target:本 workflow 与脚本始终取自主分支,PR 里改它们不会生效。
+# 安全前提(缺一不可,任何违背它的改动都按 R2 处理并逐行审阅):
+#   1. 绝不检出、绝不执行 PR 的任何代码。下面的 checkout 不得加 ref 指向 PR 的 head。
+#   2. diff、spec、PR 描述只通过 GitHub API 当数据读取,且全部视为不可信输入。
+#   3. 只处理同仓库分支的 PR;fork 的 PR 一律跳过(否则陌生人能消耗 Kimi 额度)。
+#   4. KIMI_API_KEY 存放在 Environment「kimi-review」里,该环境的部署分支限制为 main。
+# 每个 action 都固定到 commit SHA(行尾注释是版本号),防止上游标签被篡改
+on:
+  pull_request_target:
+    types: [opened, synchronize, reopened]
+
+# 只给评论权限,不给任何写代码的权限
+permissions:
+  contents: read
+  pull-requests: write
+
+concurrency:
+  group: kimi-review-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  review:
+    # 仓库变量 KIMI_REVIEW_ENABLED 设为 true 才运行(默认关闭);并且只审同仓库分支的 PR
+    if: >-
+      vars.KIMI_REVIEW_ENABLED == 'true' &&
+      github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment: kimi-review
+    steps:
+      # 不写 ref:pull_request_target 默认检出的是主分支(base)的代码,这正是我们要的
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: lts/*
+      - name: Run Kimi review
+        env:
+          KIMI_API_KEY: ${{ secrets.KIMI_API_KEY }}
+          KIMI_BASE_URL: ${{ vars.KIMI_BASE_URL }}
+          KIMI_MODEL: ${{ vars.KIMI_MODEL }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          REPO: ${{ github.repository }}
+        run: node .github/scripts/kimi-review.mjs

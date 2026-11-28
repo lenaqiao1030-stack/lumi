@@ -1,0 +1,16 @@
+name: Env Guard Test (临时,验证后删除)
+
+# 只用于验证 Environment「kimi-review」的部署分支限制确实生效。
+# 用法见 SOP 附录二;测试用的分支与 PR 用完即关、即删,绝不合并。
+on:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  guard:
+    runs-on: ubuntu-latest
+    environment: kimi-review
+    steps:
+      - run: echo "如果你在 PR 分支上看到这行输出,说明环境没有限制到 main,secret 可能暴露"
